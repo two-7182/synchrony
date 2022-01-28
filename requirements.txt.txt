@@ -1,9 +1,0 @@
-elephant
-itertools
-matplotlib
-neo
-numpy
-scipy
-seaborn
-skimage
-
