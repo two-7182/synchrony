@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import time
-from network import Connectivity
+from src.network import Connectivity
 
 class Izhikevich:
     def __init__(self, voltage, recov, voltage_reset, recov_reset, recov_scale, recov_sensitivity, decay, thresh, connect_matrix):

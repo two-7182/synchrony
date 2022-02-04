@@ -1,8 +1,8 @@
 import numpy as np
 import scipy as sp
 import time
-from network import Connectivity
-from model import Izhikevich
+from src.network import Connectivity
+from src.model import Izhikevich
 
 class Simulation:
     def __init__(self, stimulus, filters, filter_step=1, filter_start_width=0, filter_start_height=0, decay=0.1, angle_connect_strength=0.5, spatial_connect_strength=0.5, thresh=30, total_connect_strength=0.5):
