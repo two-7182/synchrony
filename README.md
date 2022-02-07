@@ -9,6 +9,8 @@ The code in this repository helps to create a model, which receives some visual 
 ## About V1 area
 To understand what's going on in the model, we need to remember how V1 area is organized. V1 neurons are specialized. Different neurons look at different regions of the input images. And different neurons can recognize lines of particulat orientation. So, each neuron is looking at some specific region and can recognize the line of some specific orientation in this regions. How does this all look?
 
+![p1](https://user-images.githubusercontent.com/32509711/152835808-b09d642a-6041-4cf0-a04d-ec7277f9b558.png)
+
 - V1 neurons are grouped into structures called **columns**. Neurons of one columns are looking at one specific part of the image. Columns which are next to each other are also looking at the parts of the image next to each other. This is called **retinotopy**.  
 - Several columns form one **hypercolumn**. It is processing information from a specific part of the image, and different columns inside this hypercolumn can recognize different angles at this specific part.  
 
