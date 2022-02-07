@@ -13,7 +13,11 @@ To understand what's going on in the model, we need to remember how V1 area is o
 neurons >> columns >> hypercolumns
 
 ## Synchrony in V1
-Synchrony in V1 is possible due to horizontal connections between neurons (Stettler, Das et al., 2002). Stronger connections lead to a greater synchrony. The strength of connections depends on two factors:
+Synchrony in V1 is possible due to horizontal connections between neurons (Stettler, Das et al., 2002). The main rule is:
+```
+Stronger connections lead to a greater synchrony. 
+```
+The strength of connections depends on two factors:
 - input familiarity,
 - geometrical characteristics of the input image.
 
