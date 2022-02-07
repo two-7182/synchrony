@@ -35,9 +35,15 @@ The neuron has two intenal variables: `membrane potential` and `recovery variabl
 
 1. A neuron receives external input + some input from other neurons.
 2. It updates its internal variables `membrane potential` and `recovery variable` according to specific formulas.
-3. If the value of a `membrane potential` exceeds a certain activation threshold - the neuron produces a spike.
+3. If the value of a `membrane potential` exceeds a certain activation threshold, the neuron produces a spike.
 4. After spiking both `membrane potential` and `recovery variable` are reset to initial values.
 
+## Modeling horizontal connections
+Wait, but what does this all have to do with horizontal connections?  
+Well, remember that each neurons receives the external input and some input from other neurons? The external input comes from the input stimulus. But the input from other neurons is coming to our neuron through the connections.  
+Before running the model, we build a connectivity matrix: is specifies the strength of the connection between each pair of neurons. Most of the connections are equal to 0, but neighboring neurons have non-zero connections. The strength of each connection depends on the angle that neurons are recognizing.  
+
+Our model can recognize 4 angles: 0, 45, 90 and 135 degrees. 
 
 ## References
 * Izhikevich, E. M. (2003). Simple model of spiking neurons. *IEEE Transactions on neural networks*, 14(6), 1569-1572.
