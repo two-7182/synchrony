@@ -12,7 +12,7 @@ To understand what's going on in the model, we need to remember how V1 area is o
 - V1 neurons are grouped into structures called **columns**. Neurons of one columns are looking at one specific part of the image. Columns which are next to each other are also looking at the parts of the image next to each other. This is called **retinotopy**.  
 - Several columns form one **hypercolumn**. It is processing information from a specific part of the image, and different columns inside this hypercolumn can recognize different angles at this specific part.  
 
-🧠 neurons >> columns >> hypercolumns
+```neurons >> columns >> hypercolumns```
 
 ## Synchrony in V1
 Synchrony in V1 is possible due to horizontal connections between neurons (Stettler, Das et al., 2002). The main rule is:
