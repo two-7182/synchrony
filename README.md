@@ -47,7 +47,8 @@ Before running the model, we build a connectivity matrix: is specifies the stren
 Our model can recognize 4 angles: `0`, `45`, `90` and `135` degrees. The connection between neurons which are recognizing `0` and `45` degrees angles is stronger than the connection between `0` and `90` neurons.
 
 ## What about synchrony?
-Our simulations confirmed that stronger connected neurons fire more synchronously. You can make sure of that, if you run simulations with different input stimuli.
+Our simulations confirmed that stronger connected neurons fire more synchronously.  
+Try running the simulations with different input stimuli, to make sure of that!
 
 ## Code structure
 the folder `src` contains all files needed to run a model. We will briefly describe each of them.
