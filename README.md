@@ -4,7 +4,7 @@ Neurons in the brain cortex can fire synchronously in various situations. This p
 The project presentation:   
 https://docs.google.com/presentation/d/17un1d3NjZNV0q3btYhq81oOmoSdkYDJsxd7vQC8Jqdw/edit?usp=sharing
 
-The code in this repository helps to create a model, which receives some visual input and responds with a synchronous firing behavior.
+The code in this repository helps to create a model, which receives some visual input and produces voltage and spike traces for each neuron.
 
 ## About V1 area
 To understand what's going on in the model, we need to remember how V1 area is organized. V1 neurons are specialized. Different neurons look at different regions of the input images. And different neurons can recognize lines of particulat orientation. So, each neuron is looking at some specific region and can recognize the line of some specific orientation in this regions. How does this all look?
