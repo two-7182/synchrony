@@ -48,7 +48,7 @@ Our model can recognize 4 angles: `0`, `45`, `90` and `135` degrees. The connect
 
 ## What about synchrony?
 Our simulations confirmed that stronger connected neurons fire more synchronously.  
-Try running the simulations with different input stimuli, to make sure of that!
+Try running the simulations with different input stimuli, to make sure of that 😊
 
 ## Code structure
 the folder `src` contains all files needed to run a model. We will briefly describe each of them.
