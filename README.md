@@ -45,7 +45,7 @@ Well, remember that each neurons receives the external input and some input from
 
 Before running the model, we build a connectivity matrix: is specifies the strength of the connection between each pair of neurons. Most of the connections are equal to 0, but neighboring neurons have non-zero connections. The strength of each connection depends on the angle that neurons are recognizing.  
 
-Our model can recognize 4 angles: `0`, `45`, `90` and `135` degrees. The connection between neurons which are recognizing `0` and `45` degrees angles is stronger than the connection between `0` and `90` neurons.
+Our model can recognize 4 angles: `0`, `45`, `90` and `135` degrees. The connection between neurons which are recognizing `0` and `45` degrees angles is *stronger* than the connection between `0` and `90` neurons.
 
 ## What about synchrony?
 Our simulations confirmed that stronger connected neurons fire more synchronously.  
