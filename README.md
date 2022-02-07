@@ -4,6 +4,8 @@ Neurons in the brain cortex can fire synchronously in various situations. This p
 The project presentation:   
 https://docs.google.com/presentation/d/17un1d3NjZNV0q3btYhq81oOmoSdkYDJsxd7vQC8Jqdw/edit?usp=sharing
 
+The code in this repository helps to create a model, which receives some visual input and responds with a synchronous firing behavior.
+
 ## About V1 area
 To understand what's going on in the model, we need to remember how V1 area is organized. V1 neurons are specialized. Different neurons look at different regions of the input images. And different neurons can recognize lines of particulat orientation. So, each neuron is looking at some specific region and can recognize the line of some specific orientation in this regions. How does this all look?
 
@@ -25,8 +27,20 @@ Input familiarity means that neurons have seen the similar input before. This is
 
 What about the geometrical characteristics? Well, neurons which are spatially close to each other (and also look at the same part of the image - remember retinotopy) have stronger connections. And neurons which respond to similar angles also form stronger connections (Kohn & Smith, 2005).
 
+So, the neurons that are: a) next to each other, b) recognizing specific angles - should be connected more srongly. And this should lead to a better synchrony. 
+
+## Our model
+We built a model of V1 area: a neural network, which consists of **Izhikevich** neurons (Izhikevich, 2003). What does it mean?  
+The neuron has two intenal variables: `membrane potential` and `recovery variable`. The model operates over time: every time step (e.g. 1 millisecond) several things happen to each neuron:
+
+1. A neuron receives external input + some input from other neurons.
+2. It updates its internal variables `membrane potential` and `recovery variable` according to specific formulas.
+3. If the value of a `membrane potential` exceeds a certain activation threshold - the neuron produces a spike.
+4. After spiking both `membrane potential` and `recovery variable` are reset to initial values.
+
 
 ## References
-*  Kohn, A., & Smith, M. A. (2005). Stimulus dependence of neuronal correlation in primary visual cortex of the macaque. *Journal of Neuroscience*, 25(14), 3661–3673.
-*  Korndörfer, C., Ullner, E., García-Ojalvo, J., & Pipa, G. (2017). Cortical spike synchrony as a measure of input familiarity. *Neural computation*, 29(9), 2491-2510.
+* Izhikevich, E. M. (2003). Simple model of spiking neurons. *IEEE Transactions on neural networks*, 14(6), 1569-1572.
+* Kohn, A., & Smith, M. A. (2005). Stimulus dependence of neuronal correlation in primary visual cortex of the macaque. *Journal of Neuroscience*, 25(14), 3661–3673.
+* Korndörfer, C., Ullner, E., García-Ojalvo, J., & Pipa, G. (2017). Cortical spike synchrony as a measure of input familiarity. *Neural computation*, 29(9), 2491-2510.
 * Stettler, D. D., Das, A., Bennett, J., & Gilbert, C. D. (2002). Lateral connectivity and contextual interactions in macaque primary visual cortex. *Neuron*, 36(4), 739–750.
