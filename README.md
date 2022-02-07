@@ -41,9 +41,16 @@ The neuron has two intenal variables: `membrane potential` and `recovery variabl
 ## Modeling horizontal connections
 Wait, but what does this all have to do with horizontal connections?  
 Well, remember that each neurons receives the external input and some input from other neurons? The external input comes from the input stimulus. But the input from other neurons is coming to our neuron through the connections.  
+
 Before running the model, we build a connectivity matrix: is specifies the strength of the connection between each pair of neurons. Most of the connections are equal to 0, but neighboring neurons have non-zero connections. The strength of each connection depends on the angle that neurons are recognizing.  
 
-Our model can recognize 4 angles: 0, 45, 90 and 135 degrees. 
+Our model can recognize 4 angles: `0`, `45`, `90` and `135` degrees. The connection between neurons which are recognizing `0` and `45` degrees angles is stronger than the connection between `0` and `90` neurons.
+
+## What about synchrony?
+Our simulations confirmed that stronger connected neurons fire more synchronously.
+
+## How to run the model
+
 
 ## References
 * Izhikevich, E. M. (2003). Simple model of spiking neurons. *IEEE Transactions on neural networks*, 14(6), 1569-1572.
