@@ -47,10 +47,16 @@ Before running the model, we build a connectivity matrix: is specifies the stren
 Our model can recognize 4 angles: `0`, `45`, `90` and `135` degrees. The connection between neurons which are recognizing `0` and `45` degrees angles is stronger than the connection between `0` and `90` neurons.
 
 ## What about synchrony?
-Our simulations confirmed that stronger connected neurons fire more synchronously.
+Our simulations confirmed that stronger connected neurons fire more synchronously. You can make sure of that, if you run simulations with different input stimuli.
 
-## How to run the model
-
+## Code structure
+the folder `src` contains all files needed to run a model. We will briefly describe each of them.
+0) `draw.py` contains functions to create some sinple input stimuli.
+1) `preprocess.py` helps to preprocess the input images: detect edges and transform them to black-and-white.
+2) `network.py` contains the logic for building a connectivity matrix between neurons.
+3) `model.py` defines the Izhikevich model, and how neurons update their values over time. `Izhikevich` is the main class to run a model.
+4) `simulation.py` is the main file to run the entire simulation. It calls preprocessing functions, starts the building of the connectivity matrix and transmits the parameters to the Izhikevich model.
+5) `measure.py` helps to measure synchrony between the arbitrary group of neurons.
 
 ## References
 * Izhikevich, E. M. (2003). Simple model of spiking neurons. *IEEE Transactions on neural networks*, 14(6), 1569-1572.
