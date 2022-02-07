@@ -12,7 +12,7 @@ To understand what's going on in the model, we need to remember how V1 area is o
 - V1 neurons are grouped into structures called **columns**. Neurons of one columns are looking at one specific part of the image. Columns which are next to each other are also looking at the parts of the image next to each other. This is called **retinotopy**.  
 - Several columns form one **hypercolumn**. It is processing information from a specific part of the image, and different columns inside this hypercolumn can recognize different angles at this specific part.  
 
-neurons >> columns >> hypercolumns
+✅ neurons >> columns >> hypercolumns
 
 ## Synchrony in V1
 Synchrony in V1 is possible due to horizontal connections between neurons (Stettler, Das et al., 2002). The main rule is:
@@ -27,7 +27,7 @@ Input familiarity means that neurons have seen the similar input before. This is
 
 What about the geometrical characteristics? Well, neurons which are spatially close to each other (and also look at the same part of the image - remember retinotopy) have stronger connections. And neurons which respond to similar angles also form stronger connections (Kohn & Smith, 2005).
 
-So, the neurons that are: a) next to each other, b) recognizing specific angles - should be connected more srongly. And this should lead to a better synchrony. 
+So, neurons that are: a) next to each other, b) recognizing specific angles - should be connected more srongly. And this should lead to a greater synchrony. 
 
 ## Our model
 We built a model of V1 area: a neural network, which consists of **Izhikevich** neurons (Izhikevich, 2003). What does it mean?  
