@@ -1,5 +1,8 @@
 # Cortical spike synchrony as a measure of contour uniformity
-Neurons in the brain cortex can fire synchronously in various situations. This project is modeling synchronous firing in *primary visual cortex*, or *V1 area*. It continues the research of Korndörfer et al. (2017), which we describe later.
+Neurons in the brain cortex can fire synchronously in various situations. This project is modeling synchronous firing in *primary visual cortex*, or *V1 area*. It continues the research of Korndörfer et al. (2017), which we describe later.  
+
+The project presentation:   
+https://docs.google.com/presentation/d/17un1d3NjZNV0q3btYhq81oOmoSdkYDJsxd7vQC8Jqdw/edit?usp=sharing
 
 ## More about V1 area
 To understand what's going on in the model, we need to remember how V1 area is organized. V1 neurons are specialized. Different neurons look at different regions of the input images. And different neurons can recognize lines of particulat orientation. So, each neuron is looking at some specific region and can recognize the line of some specific orientation in this regions. How does this all look?
@@ -9,7 +12,7 @@ To understand what's going on in the model, we need to remember how V1 area is o
 
 neurons >> columns >> hypercolumns
 
-## Biological grounds
+## Synchrony in V1
 Synchrony in V1 is possible due to horizontal connections between neurons (Stettler et al., 2002). Stronger connections lead to a greater synchrony. The strength of connections depends on two factors:
 - input familiarity,
 - geometrical characteristics of the input image.
