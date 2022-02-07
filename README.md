@@ -51,15 +51,19 @@ Our simulations confirmed that stronger connected neurons fire more synchronousl
 
 ## Code structure
 the folder `src` contains all files needed to run a model. We will briefly describe each of them.
-0) `draw.py` contains functions to create some sinple input stimuli.
-1) `preprocess.py` helps to preprocess the input images: detect edges and transform them to black-and-white.
-2) `network.py` contains the logic for building a connectivity matrix between neurons.
-3) `model.py` defines the Izhikevich model, and how neurons update their values over time. `Izhikevich` is the main class to run a model.
-4) `simulation.py` is the main file to run the entire simulation. It calls preprocessing functions, starts the building of the connectivity matrix and transmits the parameters to the Izhikevich model.
-5) `measure.py` helps to measure synchrony between the arbitrary group of neurons.
+0) `src/draw.py` contains functions to create some sinple input stimuli.
+1) `src/preprocess.py` helps to preprocess the input images: detect edges and transform them to black-and-white.
+2) `src/network.py` contains the logic for building a connectivity matrix between neurons.
+3) `src/model.py` defines the Izhikevich model, and how neurons update their values over time. `Izhikevich` is the main class to run a model.
+4) `src/simulation.py` is the main file to run the entire simulation. It calls preprocessing functions, starts the building of the connectivity matrix and transmits the parameters to the Izhikevich model.
+5) `src/measure.py` helps to measure synchrony between the arbitrary group of neurons.
+
+## How to run a model?
+1) Install all required libraries from the `requirements.txt`.
+2) Follow the example in `test.ipynb` to run the simulation and measure the synchrony in different groups of neurons afterwards.
 
 ## References
-* Izhikevich, E. M. (2003). Simple model of spiking neurons. *IEEE Transactions on neural networks*, 14(6), 1569-1572.
-* Kohn, A., & Smith, M. A. (2005). Stimulus dependence of neuronal correlation in primary visual cortex of the macaque. *Journal of Neuroscience*, 25(14), 3661–3673.
-* Korndörfer, C., Ullner, E., García-Ojalvo, J., & Pipa, G. (2017). Cortical spike synchrony as a measure of input familiarity. *Neural computation*, 29(9), 2491-2510.
-* Stettler, D. D., Das, A., Bennett, J., & Gilbert, C. D. (2002). Lateral connectivity and contextual interactions in macaque primary visual cortex. *Neuron*, 36(4), 739–750.
+* Izhikevich, E. M. (2003). Simple model of spiking neurons. *IEEE Transactions on neural networks*, 14(6), 1569-1572. http://dx.doi.org/10.1109/TNN.2003.820440
+* Kohn, A., & Smith, M. A. (2005). Stimulus dependence of neuronal correlation in primary visual cortex of the macaque. *Journal of Neuroscience*, 25(14), 3661–3673. http://dx.doi.org/10.1523/JNEUROSCI.5106-04.2005
+* Korndörfer, C., Ullner, E., García-Ojalvo, J., & Pipa, G. (2017). Cortical spike synchrony as a measure of input familiarity. *Neural computation*, 29(9), 2491-2510. http://dx.doi.org/10.1162/neco_a_00987
+* Stettler, D. D., Das, A., Bennett, J., & Gilbert, C. D. (2002). Lateral connectivity and contextual interactions in macaque primary visual cortex. *Neuron*, 36(4), 739–750. http://dx.doi.org/10.1016/S0896-6273(02)01029-2
