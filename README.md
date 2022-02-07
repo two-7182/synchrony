@@ -62,7 +62,7 @@ the folder `src` contains all files needed to run a model. We will briefly descr
 
 ## How to run a model?
 1) Install all required libraries from the `requirements.txt`.
-2) Follow the example in `test.ipynb` to run the simulation and measure the synchrony in different groups of neurons afterwards.
+2) Follow the example in `test.ipynb` to run the simulation and measure synchrony in different groups of neurons afterwards.
 
 ## References
 * Izhikevich, E. M. (2003). Simple model of spiking neurons. *IEEE Transactions on neural networks*, 14(6), 1569-1572. http://dx.doi.org/10.1109/TNN.2003.820440
