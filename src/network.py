@@ -18,6 +18,9 @@ class Connectivity:
         neurons_coord = np.array(list(itertools.product(range(height), range(width))))
         distances = sp.spatial.distance.cdist(neurons_coord, neurons_coord, 'chebyshev')
         distances = np.tile(distances, (len(self.filters),len(self.filters)))
+        distances = 1/(distances+1)
+        distances[distances < 0.5] = 0
+        distances[distances == 0.5] = 0.8
         return 1/(distances+1)
     
     def angle_connect(self, width, height):
@@ -27,11 +30,11 @@ class Connectivity:
         def angle_diff(x,y):
             x,y = sorted([x,y])
             abs_diff = 180 - abs(abs(x-y) - 180)
-            if (x == 0 and y > 90) or (x < 90 and y == 180):
-                return (180 - abs_diff)/45
+            #if (x == 0 and y > 90) or (x < 90 and y == 180):
+            #    return (180 - abs_diff)/45
             return abs_diff/45   
         
-        angles = [180//4*i for i in range(len(self.filters))]
+        angles = [180//len(self.filters)*i for i in range(len(self.filters))]
         vec_len = width * height
         angle_diffs = np.zeros((vec_len*len(self.filters), vec_len*len(self.filters)))
         
@@ -41,11 +44,16 @@ class Connectivity:
                 
         return 1/(angle_diffs+1)
     
-    def build(self, width, height, angle_connect_strength=0.5, spatial_connect_strength=0.5, total_connect_strength=1):
+    def build(self, width, height, angle_connect_strength=0.5, spatial_connect_strength=0.5, total_connect_strength=1.0):
         '''
         Build a connection matrix which takes into account both spatial distance and angular difference between all pairs of neurons.
         '''
-        return (self.angle_connect(width, height) * angle_connect_strength + self.spatial_connect(width, height) * spatial_connect_strength) * total_connect_strength
+        connect = self.angle_connect(width, height) * self.spatial_connect(width, height) * total_connect_strength
+        '''
+        connect = (self.angle_connect(width, height) * angle_connect_strength + self.spatial_connect(width, height) * spatial_connect_strength) * total_connect_strength
+        '''
+        np.fill_diagonal(connect, 0)
+        return connect
     
     def detect_angles(self, img, step=1, width_start=0, height_start=0):
         '''

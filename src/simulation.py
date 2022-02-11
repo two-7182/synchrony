@@ -5,7 +5,7 @@ from src.network import Connectivity
 from src.model import Izhikevich
 
 class Simulation:
-    def __init__(self, stimulus, filters, filter_step=1, filter_start_width=0, filter_start_height=0, decay=0.1, angle_connect_strength=0.5, spatial_connect_strength=0.5, thresh=30, total_connect_strength=0.5):
+    def __init__(self, stimulus, filters, filter_step=1, filter_start_width=0, filter_start_height=0, decay=0.1, angle_connect_strength=0.5, spatial_connect_strength=0.5, thresh=30, total_connect_strength=0.2):
         """
         It builds the connections network and runs the simulation of a given length.
         Args:
@@ -39,10 +39,10 @@ class Simulation:
         #initialization of Izihikevich parameters
         re = np.array(np.random.rand(self.n_neurons), dtype=np.double) # uniformly distributed random doubles
         voltage = -65.0 * np.ones(self.n_neurons, dtype=np.double)
-        voltage_reset = -65+5*(re**2)
-        recov_reset = 8-6*(re**2)
-        recov_scale = 0.02+0.001*re
-        recov_sensitivity = 0.2+0.001*re
+        voltage_reset = -65+5*(re**2) #-65.0 * np.ones(self.n_neurons, dtype=np.double)
+        recov_reset = 8-6*(re**2) #12.0 * np.ones(self.n_neurons, dtype=np.double)
+        recov_scale = 0.02+0.001*re #0.01
+        recov_sensitivity = 0.2+0.001*re #-0.1
         recov = recov_sensitivity * voltage  
         connect_matrix = self.connectivity.build(self.network_shape[2], self.network_shape[1], angle_connect_strength, spatial_connect_strength, total_connect_strength)
         
@@ -57,8 +57,8 @@ class Simulation:
         filtered[filtered < 2] = 0
         return filtered / 2
     
-    def run(self, length):
-        voltage, recovery, firings = self.izhikevich.simulate(self.neural_input, length)
+    def run(self, length=1000, verbose=False):
+        voltage, recovery, firings = self.izhikevich.simulate(self.neural_input, length, verbose)
         return voltage, recovery, firings
     
     def angle_populations(self):

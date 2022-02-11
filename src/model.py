@@ -1,6 +1,8 @@
+import math
 import numpy as np
 import scipy as sp
 import time
+
 from src.network import Connectivity
 
 class Izhikevich:
@@ -45,10 +47,17 @@ class Izhikevich:
         for i in range(substeps):  # for numerical stability, execute at least two substeps per ms
             voltage_next += (1.0/substeps) * (0.04*(voltage_next**2) + (5*voltage_next) + 140 - recov + input_next)
             recov_next += (1.0/substeps) * self.recov_scale * (self.recov_sensitivity*voltage_next - recov_next)
+            
+        voltage_next[voltage_next > 70] = 70
+        voltage_next[voltage_next < -100] = -100
+        
+        recov_next[recov_next > 70] = 70
+        recov_next[recov_next < -100] = -100   
+        
         return voltage_next, recov_next, fired
     
     @staticmethod
-    def thalamic_input(signal, prob=0.6):
+    def thalamic_input(signal, prob=0.9):
         '''
         Generates randomized thalamic input: each nonzero neuron spikes with agiven probability.
         Args:
@@ -84,9 +93,9 @@ class Izhikevich:
         t0 = time.clock()
 
         for t in range(1,length):
-            random_inp = Izhikevich.thalamic_input(neural_input) + np.random.rand(n_neurons) * 0.3
+            random_inp = Izhikevich.thalamic_input(neural_input) + np.random.rand(n_neurons) * 0.5
             all_input += random_inp
-            all_input -= all_input * self.decay
+            all_input *= 1 - self.decay
             voltage_out[:,t], recov_out[:,t], firings_out[:,t] = self._time_step(voltage_out[:,t-1],
                                                                     recov_out[:,t-1], all_input)
             
