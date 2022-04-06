@@ -46,6 +46,7 @@ class Preprocessor:
 
         #list of filters for angle detection
         self.angle_filters = self._get_angle_filters(angular_resolution, filter_size, set_filter_size_to_min)
+        self.angle_labels = self._get_angle_labels(angular_resolution)
         
 
     #======================================================================#
@@ -72,13 +73,13 @@ class Preprocessor:
             image_angles = [convolve(np.array(image_binary), angle_filter, mode='same', method='direct') for i, angle_filter in enumerate(self.angle_filters)]
 
             if plot_substeps: 
-                descriptions = ["image preprocessing", "original image", "intensity values", "edge detection", "binary image"]
-                self._plot_images(os.path.split(image_path)[0]+"/preprocessing_steps.png", 
-                    [image_input, image_gray, image_edges, image_binary], descriptions)
+                plot_label = ["image preprocessing", "original image", "intensity values", "edge detection", "binary image"]
+                file_path = os.path.split(image_path)[0]+f"/preprocessing_steps_{os.path.split(image_path)[1]}"
+                self._plot_images(file_path, [image_input, image_gray, image_edges, image_binary], plot_label)
 
-                descriptions = ["angle detection maps", "0 degree", "45 degree", "90 degree", "135 degree"] #find way to add dynamic angle descriptions
-                self._plot_images(os.path.split(image_path)[0]+"/stimulus_mapping.png", 
-                    image_angles, descriptions)
+                plot_label =  self.angle_labels
+                file_path = os.path.split(image_path)[0]+f"/stimulus_mapping_{os.path.split(image_path)[1]}"
+                self._plot_images(file_path, image_angles, plot_label)
             
         return image_angles
 
@@ -125,11 +126,17 @@ class Preprocessor:
         min_filter_size = 0
         return min_filter_size
 
-    def _plot_images(self, image_path, images, descriptions):
+    def _get_angle_labels(self, angular_resolution):
+
+        #TODO: create dynamical list of angle labels
+        return ["angle detection maps", "0 degree", "45 degree", "90 degree", "135 degree"]
+
+
+    def _plot_images(self, file_path, images, plot_label):
         """Compile plot and save all substeps into one figure
         
         args:
-            image_path = file path of the image to be saved under
+            file_path = file path of the image to be saved under
             images = list of images to be plotted and saved
             descriptions = list containing figure title and description of the images 
         """
@@ -137,11 +144,11 @@ class Preprocessor:
         fig, ax = plt.subplots(nrows=2, ncols=2)
         for i, axi in enumerate(ax.flat):
             axi.axis("off")
-            axi.set_title(descriptions[i+1])
+            axi.set_title(plot_label[i+1])
             axi.imshow(images[i])
-        plt.suptitle(descriptions[0])
+        plt.suptitle(plot_label[0])
         plt.tight_layout()
-        plt.savefig(image_path)
+        plt.savefig(file_path)
         plt.show()
 
 #==============================================================================#
