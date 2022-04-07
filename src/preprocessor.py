@@ -63,23 +63,32 @@ class Preprocessor:
             image_path = file path of the image input
             plot_substeps = whether to compile the substeps, plot and save them
         """
-        
-        with Image.open(image_path) as image_input:
-            print('Start preprocessing for ' + os.path.split(image_path)[1] +f' with size {image_input.width} x {image_input.height}')
 
-            image_gray   = image_input.convert("L")
-            image_edges  = image_gray.filter(ImageFilter.FIND_EDGES)
-            image_binary = image_edges.point(lambda pixel_value : 255 if pixel_value > threshold_otsu(np.array(image_gray)) else 0, mode = "1")
-            image_angles = [convolve(np.array(image_binary), angle_filter, mode='same', method='direct') for i, angle_filter in enumerate(self.angle_filters)]
+        try:
+            with Image.open(image_path) as image_input:
+                print('Start preprocessing for ' + os.path.split(image_path)[1] 
+                    +f' with size {image_input.width} x {image_input.height}')
 
-            if plot_substeps: 
-                plot_label = ["image preprocessing", "original image", "intensity values", "edge detection", "binary image"]
-                file_path = os.path.split(image_path)[0]+f"/preprocessing_steps_{os.path.split(image_path)[1]}"
-                self._plot_images(file_path, [image_input, image_gray, image_edges, image_binary], plot_label)
+                image_gray   = image_input.convert("L")
+                image_edges  = image_gray.filter(ImageFilter.FIND_EDGES)
+                threshold    = threshold_otsu(np.array(image_gray))
+                threshold_fn = lambda pixel_value : 255 if pixel_value > threshold else 0
+                image_binary = image_edges.point(threshold_fn, mode = "1")
+                image_angles = np.array([convolve(image_binary, angle_filter, mode='same', 
+                    method='direct') for i, angle_filter in enumerate(self.angle_filters)])
+                image_angles[np.array(image_angles) < 2] = 0
 
-                plot_label =  self.angle_labels
-                file_path = os.path.split(image_path)[0]+f"/stimulus_mapping_{os.path.split(image_path)[1]}"
-                self._plot_images(file_path, image_angles, plot_label)
+                if plot_substeps: 
+                    plot_label = ["image preprocessing", "original image", "intensity values", "edge detection", "binary image"]
+                    file_path = os.path.split(image_path)[0]+f"/preprocessing_steps_{os.path.split(image_path)[1]}"
+                    self._plot_images(file_path, [image_input, image_gray, image_edges, image_binary], plot_label)
+
+                    plot_label =  self.angle_labels
+                    file_path = os.path.split(image_path)[0]+f"/stimulus_mapping_{os.path.split(image_path)[1]}"
+                    self._plot_images(file_path, image_angles.tolist(), plot_label)
+        except FileNotFoundError:
+            print('File does not exist')
+
             
         return image_angles
 
@@ -101,9 +110,9 @@ class Preprocessor:
 
         #Exception handling for filter size
         if set_filter_size_to_min:
-            filter_size = self._get_min_filter_size(angular_resolution, filter_size)
+            filter_size = self._get_min_filter_size(angular_resolution)
 
-        elif filter_size < self._get_min_filter_size(angular_resolution, filter_size):
+        elif filter_size < self._get_min_filter_size(angular_resolution):
             raise ValueError('Filter size is too small for specified angular resolution')
 
 
@@ -114,7 +123,7 @@ class Preprocessor:
 
         return angle_filters  
 
-    def _get_min_filter_size(self, angular_resolution, filter_size):
+    def _get_min_filter_size(self, angular_resolution):
         """Calculate minimal filter size given by the specified angular resolution
         
         args:
@@ -162,10 +171,14 @@ if __name__ == "__main__":
     filter_size = 100
     set_filter_size_to_min = False
     image_path = os.path.join(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__))), "data/laptop2.png")
+        os.path.abspath(__file__))), "data/line.jpg") #"data/laptop2.png") #
+        
 
     #preprocessor instantiation
     preprocessor = Preprocessor(angular_resolution, filter_size, set_filter_size_to_min)
+
+    #access angle filters for connectivity matrix
+    angle_filters = preprocessor.angle_filters
 
     #image preprocessing
     result = preprocessor.preprocess(image_path)
