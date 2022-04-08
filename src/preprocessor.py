@@ -59,7 +59,7 @@ def plot_images(images, plot_label):
         os.path.abspath(__file__))), f"data/{plot_label[0]}")
 
     #TODO: create dynamic size plotting for more angle filters
-    fig, ax = plt.subplots(nrows=2, ncols=2)
+    fig, ax = plt.subplots(nrows=2, ncols=int(len(images)/2))
     for i, axi in enumerate(ax.flat):
         axi.axis("off")
         axi.set_title(plot_label[i+1])
@@ -122,12 +122,12 @@ class Preprocessor:
         #preprocessing pipeline for input image
         image_gray   = image_input.convert("L")
         image_edges  = image_gray.filter(ImageFilter.FIND_EDGES)
-        threshold    = threshold_otsu(np.array(image_edges))
+        threshold    = threshold_otsu(np.array(image_edges)) 
         threshold_fn = lambda pixel_value : 1 if pixel_value > threshold else 0
         image_binary = image_edges.point(threshold_fn, mode = "1")
         image_angles = np.array([convolve(image_binary, angle_filter, mode='same', 
             method='direct') for i, angle_filter in enumerate(self.angle_filters)])
-        image_angles[np.array(image_angles) < 2] = 0
+        image_angles[np.array(image_angles) < 4] = 0
 
         #plot and save substeps if requested
         if plot_substeps:
@@ -192,10 +192,20 @@ class Preprocessor:
             #TODO: write code here (add dynamic filter creation here)
             # edge detection filters for 0, 45, 90, 135 degree 
             # (replace with dynamic generation)
-            angle_filters = [[[0,0],[1,1]], [[1,0],[0,1]], [[0,1],[0,1]], [[0,1],[1,0]]]
-            print(type(angle_filters))
 
-        return angle_filters  
+            angle_filters_45degrees = [[[0,0],[1,1]], [[1,0],[0,1]], [[0,1],[0,1]], [[0,1],[1,0]]]
+
+            angle_filter_000 = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1]]
+            angle_filter_022 = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 1], [1, 1, 0, 0]]
+            angle_filter_045 = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+            angle_filter_067 = [[0, 1, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]]
+            angle_filter_090 = [[1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]]
+            angle_filter_112 = [[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 1]]
+            angle_filter_135 = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+            angle_filter_157 = [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 0, 0], [0, 0, 1, 1]]
+
+        return [angle_filter_000, angle_filter_022, angle_filter_045, angle_filter_067, 
+            angle_filter_090, angle_filter_112, angle_filter_135, angle_filter_157]  
 
     @_get_angle_filters.register
     def _(self, filter_size:None, angular_resolution:int) -> list[str]:
@@ -228,7 +238,12 @@ class Preprocessor:
         """
 
         #TODO: create dynamical list of angle labels
-        return ["angle_detection_maps", "0 degree", "45 degree", "90 degree", "135 degree"]
+        angle_labels_45_degrees =  ["angle_detection_maps", "0 degree", "45 degree", 
+            "90 degree", "135 degree"]
+
+        angle_labels_22_degrees = ["angle_detection_maps", "0 degree", "22 degree", 
+            "45 degree", "67 degree",  "90 degree", "112 degree", "135 degree", "157 degree"]
+        return angle_labels_22_degrees
 
 #==============================================================================#
 #==========================|          Main          |==========================#
