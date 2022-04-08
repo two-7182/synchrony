@@ -90,7 +90,8 @@ class Izhikevich:
         recov_out[:,0] = self.recov #initial recovery
         firings_out = np.zeros((n_neurons, length), dtype=np.double)
         
-        t0 = time.clock()
+        #t0 = time.clock()
+        t0 = time.perf_counter() #py3.8
 
         for t in range(1,length):
             random_inp = Izhikevich.thalamic_input(neural_input) + np.random.rand(n_neurons) * 0.5
@@ -100,8 +101,10 @@ class Izhikevich:
                                                                     recov_out[:,t-1], all_input)
             
             if verbose and t % 100 == 0:
-                print(f"Simulated {str(t)} ms of braintime in {str(time.clock()-t0)} s of computer time.") 
+                #print(f"Simulated {str(t)} ms of braintime in {str(time.clock()-t0)} s of computer time.")
+                print(f"Simulated {str(t)} ms of braintime in {str(time.perf_counter()-t0)} s of computer time.") #py3.8
                 
-        t1 = time.clock()
+        #t1 = time.clock()
+        t1 = time.perf_counter() #py3.8
         print(f"Simulation took {str((t1-t0))} s")
         return voltage_out, recov_out, firings_out

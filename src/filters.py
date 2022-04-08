@@ -31,7 +31,7 @@ def filter_up_to_44deg(arc, columns=13):
     hypotenuse = columns / math.cos(angle)
 
     # use hypotenuse to calculate the end point of it (x2,y2) in the rows x columns grid (array)
-    x2 = round(x1 + hypotenuse * math.cos(angle),3) #x-coordinate of the endpoint of the line, actually this is always the # of cols
+    x2 = round(x1 + hypotenuse * math.cos(angle),3) # x-coordinate of the endpoint of the line, actually this is always the # of cols
     y2 = round(y1 + hypotenuse * math.sin(angle),3) # y-coordinate of endpoint of line
 
 
@@ -231,7 +231,6 @@ def filter_90deg(rows = 13):
     end_cols = columns/2
     return(start_cols,start_rows,end_cols,end_rows, columns)
 
-
 def filter_0deg(rows = 13):
 
     columns = rows
@@ -240,7 +239,6 @@ def filter_0deg(rows = 13):
     end_rows = rows-1
     end_cols = columns-1
     return(start_rows, start_cols, end_rows, end_cols, columns)
-
 
 def filter_45deg(rows = 13):
 
@@ -269,7 +267,8 @@ def define_filter(arc,columns=13):
         return(filter_up_to_44deg(arc, columns))
 
     elif arc == 45:
-        return(filter_90deg(columns))
+        #return(filter_90deg(columns)) #Feedback: copy paste error here? see next line
+        return(filter_45deg(columns))
 
     elif arc > 45 and arc<90:
         return(filter_up_to_89deg(arc, columns))
@@ -286,12 +285,14 @@ def define_filter(arc,columns=13):
     else: # = arc >135 but <180:
         return(filter_greater_135deg(arc, columns))
 
-# calling the function and depicting the respective filter
-start_cols,start_rows,end_cols, end_rows, cols = define_filter(135)
-rows = cols
-conv_filter = np.zeros(shape=(rows,cols))
 
-angle_line = line_nd((start_rows,start_cols), (end_rows, end_cols), endpoint=True) #using line_nd in order to be able use floats
-conv_filter[angle_line] = 1
-plt.imshow(conv_filter)
-plt.show()
+if __name__ == '__main__':
+    # calling the function and depicting the respective filter
+    start_cols, start_rows, end_cols, end_rows, cols = define_filter(135)
+    rows = cols
+    conv_filter = np.zeros(shape=(rows,cols))
+
+    angle_line = line_nd((start_rows,start_cols), (end_rows, end_cols), endpoint=True) #using line_nd in order to be able use floats
+    conv_filter[angle_line] = 1
+    plt.imshow(conv_filter)
+    plt.show()
