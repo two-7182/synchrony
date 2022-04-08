@@ -23,7 +23,6 @@ import warnings
 from typing import List, overload
 from functools import singledispatch, update_wrapper
 
-
 #related third party imports
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,8 +37,9 @@ from draw import line_45_joint
 #=========================|          Utils           |=========================#
 #==============================================================================#
 
-def instance_method_singledispatch(func):
+def singledispatch_instance_method(func):
     """Small wrapper function to allow for singledispatch of instance methods"""
+
     dispatcher = singledispatch(func)
     def wrapper(*args, **kw):
         return dispatcher.dispatch(args[1].__class__)(*args, **kw)
@@ -48,7 +48,7 @@ def instance_method_singledispatch(func):
     return wrapper
 
 def plot_images(images, plot_label):
-    """Compile plot and save all substeps into one figure
+    """Compile plot from list of images and save all substeps into one figure
     
     args:
         images = list of images to be plotted and saved
@@ -100,7 +100,7 @@ class Preprocessor:
     #======================|     Preprocessing      |======================#
     #======================================================================#
     
-    @instance_method_singledispatch
+    @singledispatch_instance_method
     def preprocess(self, image_input:Image.Image, plot_substeps:bool=True) -> np.ndarray:
         """Preprocess the image, first from RGB to grayscale. Then apply a Sobel 
         filter on the intensity values to gain edge detection. Threshold result 
@@ -168,7 +168,7 @@ class Preprocessor:
     #=================|     Angle Filter Generation      |=================#
     #======================================================================#
 
-    @instance_method_singledispatch
+    @singledispatch_instance_method
     def _get_angle_filters(self, filter_size:int, angular_resolution:int) -> list[str]:
         """Create filters to detect angles in the image
         
@@ -202,7 +202,7 @@ class Preprocessor:
         """"Wrapper for overloading the _get_angle_filters method
         
         args:
-            filter_size = omitted (None)
+            filter_size = None
             angular_resolution = angular resolution of the filters for angle detection
         """
 
