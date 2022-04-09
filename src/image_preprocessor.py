@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Preprocessing class for the research project 'Cortical Spike Synchrony as a 
-Measure of Contour Uniformity', as part of the RTG computational cognition, 
+Image preprocessing class for the research project 'Cortical Spike Synchrony as 
+a Measure of Contour Uniformity', as part of the RTG computational cognition, 
 Osnabrueck University, Germany.
 """
 
@@ -73,7 +73,7 @@ def plot_images(images, plot_label):
 #======================|          Preprocessor          |======================#
 #==============================================================================#
 
-class Preprocessor:
+class ImagePreprocessor:
 
     @overload
     def __init__(self, angular_resolution:int, filter_size:int) -> None:
@@ -122,7 +122,7 @@ class Preprocessor:
         #preprocessing pipeline for input image
         image_gray   = image_input.convert("L")
         image_edges  = image_gray.filter(ImageFilter.FIND_EDGES)
-        threshold    = threshold_otsu(np.array(image_edges)) 
+        threshold    = threshold_otsu(np.array(image_edges))
         threshold_fn = lambda pixel_value : 1 if pixel_value > threshold else 0
         image_binary = image_edges.point(threshold_fn, mode = "1")
         image_angles = np.array([convolve(image_binary, angle_filter, mode='same', 
@@ -227,7 +227,7 @@ class Preprocessor:
         """
 
         #TODO: write code to calculate min filter size
-        min_filter_size = 25
+        min_filter_size = 4
         return min_filter_size
 
     def _get_angle_labels(self, angular_resolution:int) -> list[str]:
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     image_array = line_45_joint(width=28, height=28, strength=255, length=3)
 
     #preprocessor instantiation
-    preprocessor = Preprocessor(angular_resolution, filter_size)
+    preprocessor = ImagePreprocessor(angular_resolution, filter_size)
 
     #access angle filters for connectivity matrix
     angle_filters = preprocessor.angle_filters
