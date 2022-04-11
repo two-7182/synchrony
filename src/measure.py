@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+
+"""
+Meeasure class for the research project 'Cortical Spike Synchrony as 
+a Measure of Contour Uniformity', as part of the RTG computational cognition, 
+Osnabrueck University, Germany.
+"""
+
+__author__    = 'Julius Mayer, Viktoria Zemliak, Flora Perizonius'
+__email__     = 'viktoriia.zemliak@uni-osnabrueck.de'
+__date__      = '01.04.2022'
+__copyright__ = '(C) 2022 Julius Mayer, Viktoria Zemliak, Flora Perizonius'
+__license__   = 'MIT License'
+
 import itertools
 import numpy as np
 from elephant.spike_train_dissimilarity import van_rossum_distance, victor_purpura_distance
