@@ -147,7 +147,7 @@ if __name__ == "__main__":
                                         total_connect_strength=total_connect_strength)
         
     #helper functions for plotting and saving the resulting connectivity matrix
-    def set_visible_labels(labels, step=10):
+    def set_visible_labels(labels, step=5):
         '''
         Decrease the number of labels visible on the plot.
         '''
@@ -170,6 +170,18 @@ if __name__ == "__main__":
         ax.set_title(plot_title)
     
         ax.invert_yaxis()
+        
+        #create custom ticks
+        ticks = [list(range(0,width*height)) for i in range(len(filters))]
+        ticks = sum(ticks, [])
+        
+        #set x ticks
+        ax.set_xticks(range(100))
+        ax.set_xticklabels(ticks)
+            
+        #set y ticks
+        ax.set_yticks(range(100))
+        ax.set_yticklabels(ticks)            
                 
         set_visible_labels(ax.get_xticklabels())
         set_visible_labels(ax.get_yticklabels())
