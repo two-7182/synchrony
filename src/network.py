@@ -15,8 +15,9 @@ __license__   = 'MIT License'
 import itertools
 import matplotlib.pyplot as plt 
 import numpy as np
-from scipy import signal, spatial
 import seaborn as sns
+
+from scipy import signal, spatial
 
 class Connectivity:
     def __init__(self, filters):
@@ -27,7 +28,7 @@ class Connectivity:
         '''
         self.filters = filters
     
-    def spatial_connect(self, width, height):
+    def spatial_connect(self, width, height, connect_strength):
         '''
         Calculating spatial connectivity between all neurons.
         Args:
@@ -46,9 +47,9 @@ class Connectivity:
         distances[distances < 0.5] = 0
         
         #return inverted distance: the bigger distances, the weaker connections
-        return 1/(distances+1)
+        return 1/(distances+1) * connect_strength
     
-    def angle_connect(self, width, height):
+    def angle_connect(self, width, height, connect_strength):
         '''
         Calculating angular connectivity between all neurons. 
         Bigger angle difference -> weaker connection.
@@ -87,9 +88,9 @@ class Connectivity:
                 angle_diffs[vec_len*i:vec_len*(i+1),vec_len*j:vec_len*(j+1)] = angle_diff(angles[i], angles[j]) / angle_res
         
         #return inverted differences: the bigger differences, the weaker connections      
-        return 1/(angle_diffs+1)
+        return 1/(angle_diffs+1) * connect_strength
     
-    def build(self, width, height, angle_connect_strength=0.5, spatial_connect_strength=0.5, total_connect_strength=0.5):
+    def build(self, width, height, n_neurons_exc, n_neurons_inh, inh_weight, angle_connect_strength=0.5, spatial_connect_strength=0.5, total_connect_strength=0.5):
         '''
         Build a connection matrix which takes into account both spatial distance and angular difference between all pairs of neurons.
         Args:
@@ -100,16 +101,30 @@ class Connectivity:
             total_connect_strength = scaling variable for the resulting connection values
         '''
         #count spatial connection weights
-        self.spatial_connect_matrix = self.spatial_connect(width, height) 
+        self.spatial_connect_matrix = self.spatial_connect(width, height, spatial_connect_strength) 
         
         #count angle connection weights
-        self.angle_connect_matrix = self.angle_connect(width, height)
+        self.angle_connect_matrix = self.angle_connect(width, height, angle_connect_strength)
         
         #count resulting connection weights
-        connect = (self.spatial_connect_matrix*spatial_connect_strength + self.angle_connect_matrix*angle_connect_strength) * total_connect_strength
-        #connect = self.spatial_connect_matrix * self.angle_connect_matrix * total_connect_strength
-        np.fill_diagonal(connect, 0) #turn connections of neurons to themselves to zero
-        return connect
+        connect_matrix = (self.spatial_connect_matrix + self.angle_connect_matrix) * total_connect_strength
+        #connect_matrix = self.spatial_connect_matrix * self.angle_connect_matrix * total_connect_strength
+        np.fill_diagonal(connect_matrix, 0) #turn connections of neurons to themselves to zero
+        
+        #building inhibitory connections
+        if n_neurons_inh > 0:
+            #initialize zero connections for inhibitory neurons
+            connect_matrix = np.pad(connect_matrix, pad_width=(0, n_neurons_inh), constant_values=0) 
+            
+            #how many excitatory neurons are connected to one inhibitory neuron
+            inh_group = int(n_neurons_exc / n_neurons_inh) 
+            for i in range(n_neurons_inh):
+                connect_matrix[inh_group*i:inh_group*(i+1), n_neurons_exc+i] = -connect_matrix.max()*inh_weight
+                connect_matrix[n_neurons_exc+i, inh_group*i:inh_group*(i+1)] = connect_matrix.max() #*inh_weight
+            connect_matrix[-n_neurons_inh-1,n_neurons_exc+i] = -connect_matrix.max()*inh_weight
+            connect_matrix[n_neurons_exc+i,-n_neurons_inh-1] = connect_matrix.max() #*inh_weight
+            
+        return connect_matrix
     
     def detect_angles(self, img, step=1, width_start=0, height_start=0):
         '''
