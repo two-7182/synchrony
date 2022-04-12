@@ -28,7 +28,7 @@ class Simulation:
                  angle_connect_strength=0.5, spatial_connect_strength=0.5, total_connect_strength=0.5,
                  inh=0.2, inh_weight=2.0, 
                  random_noise=0.0, input_firing_prob=1.0, random_seed=None,
-                 input_strength=1.0
+                 input_strength=1.0, ini_standard=False
                  ):
         """
         Builds the connections network and runs the simulation of a given length.
@@ -81,7 +81,7 @@ class Simulation:
         #create an instance of the Izhikevich neural model
         self.izhikevich = Izhikevich(connect_matrix=connect_matrix, 
                                      n_neurons_exc = n_neurons_exc, n_neurons_inh = n_neurons_inh,
-                                     ini_standard=False, input_strength=input_strength,
+                                     ini_standard=ini_standard, input_strength=input_strength,
                                      random_noise=random_noise, input_firing_prob=input_firing_prob, random_seed=random_seed
                                      )
         
@@ -102,6 +102,7 @@ if __name__ == '__main__':
     filters = [[[0,0],[1,1]], [[1,0],[0,1]], [[0,1],[0,1]], [[0,1],[1,0]]]
     inh = 0.2
     length = 1000
+    ini_standard = True
     
     #create stimulus image
     height, width, strength = 10, 10, 1
@@ -111,7 +112,7 @@ if __name__ == '__main__':
     
     #initialize simulation object
     print('Initialize the simulation')
-    sim = Simulation(stimulus=stimulus, filters=filters, inh=inh)
+    sim = Simulation(stimulus=stimulus, filters=filters, inh=inh, ini_standard=ini_standard)
     #run simulation
     print('Simulation started...')
     voltage, recovery, firings = sim.run(length, True)
