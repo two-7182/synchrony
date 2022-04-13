@@ -106,13 +106,17 @@ class Izhikevich:
         
         return voltage_next, recov_next, fired
     
-    def thalamic_input(self, signal):
+    def thalamic_input(self, signal, RNG_seed=None):
         '''
         Generates randomized thalamic input: each nonzero neuron spikes with agiven probability.
         Args:
             signal = input signal
             prob = spiking probability
         '''
+
+        #seed RNG
+        np.random.seed() if RNG_seed == None else np.random.seed(RNG_seed)
+
         out_signal = np.zeros_like(signal)
         idx_nonzero = np.nonzero(signal)[0]
         spikes = np.random.choice(len(idx_nonzero), int(np.floor(self.input_firing_prob * len(idx_nonzero))), replace=False)
