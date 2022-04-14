@@ -1,0 +1,15 @@
+preprocessing:
+  input_image: ../data/NY_angles/NY2.jpg
+  angle_resolution: 45
+  filter_size: None
+  conv_threshold_specificity: 1.0
+
+model:
+  random_noise: 0.5
+  inhibition_proportion: 0.1
+  inhibition_strength: 0.2
+
+connectivity:
+  total_connection_strength: 1.0
+  spatial_connection_strength: 1.0
+  angle_connection_strength: 1.0
