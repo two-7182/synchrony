@@ -91,6 +91,8 @@ class ImagePreprocessor:
                     size of the original image input
         """
 
+        print(f'Start preprocessing image object')
+
         #convert from RGB to grayscale (intensity values) and apply edge detection filter
         image_gray = image_input.convert("L")
         image_edges = image_gray.filter(ImageFilter.FIND_EDGES)
@@ -117,11 +119,12 @@ class ImagePreprocessor:
         """Wrapper for overloading the preprocess method with a 
         file path (str) as image input"""
 
+        print(f'Start preprocessing from file {image_input}')
         try:
             return self.preprocess(Image.open(image_input), filter_graciousness, plot_substeps)
 
         except FileNotFoundError:
-            print('File does not exist')
+            print(f'File "{image_input}" does not exist')
 
     @preprocess.register(np.ndarray)
     def _(self, image_input:np.ndarray, filter_graciousness:float=1.0,
@@ -129,6 +132,7 @@ class ImagePreprocessor:
         """Wrapper for overloading the preprocess method with a 
         numpy array (np.ndarray) as image input"""
 
+        print(f'Start preprocessing from numpy arrary')
         return self.preprocess(Image.fromarray(image_input), filter_graciousness, plot_substeps)
 
     #======================================================================#
@@ -253,7 +257,7 @@ if __name__ == "__main__":
     
     #different possible types of input instances
     image_path = os.path.join(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__))), "data/laptop2.png")
+        os.path.abspath(__file__))), "data/NY_angles/NY2.jpg")
     image_object = Image.open(image_path)
     image_array = line_45_joint(width=28, height=28, strength=255, length=3)
 
@@ -266,3 +270,6 @@ if __name__ == "__main__":
 
     #preprocessing can take any of image_path, image_object or image_array
     result = preprocessor.preprocess(image_object)
+
+
+    print(image_path)
