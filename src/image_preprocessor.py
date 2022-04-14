@@ -102,7 +102,7 @@ class ImagePreprocessor:
         if plot_substeps: self.plot_images([image_input, image_gray, image_edges, image_binary], 
             image_or_map_labels=True)
 
-        #convolve angle detection filters over binary image
+        #convolve angle detection filters over binary image (add optional step size later)
         image_angles = np.array([convolve(image_binary, angle_filter, mode='same', 
             method='direct') for i, angle_filter in enumerate(self.angle_filters)])
         filter_threshold = np.sum(self.angle_filters[0]) * filter_graciousness
@@ -265,4 +265,4 @@ if __name__ == "__main__":
     angle_filters = preprocessor.angle_filters
 
     #preprocessing can take any of image_path, image_object or image_array
-    result = preprocessor.preprocess(image_array)
+    result = preprocessor.preprocess(image_object)
