@@ -33,38 +33,39 @@ from draw import line_45_joint
 #=======================|          Simulation          |=======================#
 #==============================================================================#
 
-class Simulation:
-    def __init__(self, stimulus, filters, 
-                 angle_connect_strength=0.5, spatial_connect_strength=0.5, total_connect_strength=0.5,
-                 inh=0.2, inh_weight=2.0, 
-                 random_noise=0.0, input_firing_prob=1.0, random_seed=None,
-                 input_strength=1.0, ini_standard=False
-                 ):
+class SimulationExperiment:
+
+    def __init__(self, config_file_path):
         """Builds the connections network and runs the simulation of a given length.
-        
+         
         Args:
-            stimulus = the input stimulus image
-            filters = convolution filters for angles recognition
-            angle_connect_strength = the strength of angular connections between neurons
-            spatial_connect_strength = the strength of spatial connections between neurons
-            total_connect_strength = the strength of final connections between neurons
-            inh = proportion of inhibitory neurons
-            inh_weight = scaling factor for the inhibitory connections
-            random_noise = amount of random noie in the model
-            input_firing_prob = probability of firing of the input neurons
-            random_seed = random seed
+            config_file_path = file path to the yaml config file
         """
 
+        #========================|     Parameter      |========================#
+        #import experiment configurations
+        abs_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file_path)
+        with open(abs_file_path) as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+
+
+        #======================|     Initialization     |======================#
+        #preprocessor instantiation and preprocessing of image
+        preprocessor = ImagePreprocessor(
+            config["preprocessing"]["angle_resolution"], 
+            config["preprocessing"]["filter_size"])
+
         #initialize the Connectivity class with filters
-        self.connectivity = Connectivity(filters)
+        connectivity = Connectivity(preprocessor.angle_filters)
         
-        #input preprocessing
-        self.neural_input = stimulus
+        #input preprocessing (replace array with config["preprocessing"]["input_image"])
+        image_array = line_45_joint(width=28, height=28, strength=255, length=3)
+        self.neural_input = preprocessor.preprocess(image_array, plot_substeps=False)
         
         #initialize helper simulation parameters
         network_shape = self.neural_input.shape
         n_neurons_exc = np.prod(self.neural_input.shape)
-        n_neurons_inh = int(n_neurons_exc*inh)  
+        n_neurons_inh = int(n_neurons_exc * config["connectivity"]["inh"])  
         
         #reshape neural input array for convenience
         self.neural_input = self.neural_input.reshape(-1)
@@ -75,25 +76,28 @@ class Simulation:
             self.neural_input = np.concatenate((self.neural_input, inh_input))
         
         #initialize connectivity matrix
-        connect_matrix = self.connectivity.build(width=network_shape[2], height=network_shape[1], 
-                                                 angle_connect_strength=angle_connect_strength, 
-                                                 spatial_connect_strength=spatial_connect_strength, 
-                                                 total_connect_strength=total_connect_strength,
-                                                 n_neurons_exc=n_neurons_exc, n_neurons_inh=n_neurons_inh, inh_weight=inh_weight
-                                                 )
+        connect_matrix = connectivity.build(width=network_shape[2], height=network_shape[1], 
+                                                 angle_connect_strength=config["connectivity"]["angle_connect_strength"], 
+                                                 spatial_connect_strength=config["connectivity"]["spatial_connect_strength"], 
+                                                 total_connect_strength=config["connectivity"]["total_connect_strength"],
+                                                 n_neurons_exc=n_neurons_exc, n_neurons_inh=n_neurons_inh, 
+                                                 inh_weight=config["connectivity"]["inh_weight"])
         
         #create an instance of the Izhikevich neural model
         self.izhikevich = Izhikevich(connect_matrix=connect_matrix, 
-                                     n_neurons_exc = n_neurons_exc, n_neurons_inh = n_neurons_inh,
-                                     ini_standard=ini_standard, input_strength=input_strength,
-                                     random_noise=random_noise, input_firing_prob=input_firing_prob, random_seed=random_seed
-                                     )
+                                     n_neurons_exc = n_neurons_exc, 
+                                     n_neurons_inh = n_neurons_inh,
+                                     ini_standard=config["model"]["ini_standard"], 
+                                     input_strength=config["model"]["input_strength"],
+                                     random_noise=config["model"]["random_noise"], 
+                                     input_firing_prob=config["model"]["input_firing_prob"], 
+                                     random_seed=config["simulation"]["random_seed"])
     
     #======================================================================#
     #======================|     Run Simulation     |======================#
     #=======================================================================#
 
-    def run(self, length=100, verbose=False):
+    def run(self, length=1000, verbose=False):
         voltage, recovery, firings = self.izhikevich.simulate(self.neural_input, length, verbose)
         return voltage, recovery, firings
         
@@ -103,34 +107,12 @@ class Simulation:
     
 if __name__ == '__main__':
 
-    #========================|     Parameter      |========================#
-    #import experiment configurations
-    with open('config.yaml') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
-
-    #preprocessor parameter
-    angular_resolution =  config["preprocessing"]["angle_resolution"]
-    filter_size = config["preprocessing"]["filter_size"]
-    image_path = config["preprocessing"]["input_image"]
-    image_array = line_45_joint(width=28, height=28, strength=255, length=3)
-
-    #simulation parameters
-    inh = 0.2
-    length = 1000
-    ini_standard = True
-    
-    #======================|     Initialization     |======================#
-    #preprocessor instantiation and preprocessing of image
-    preprocessor = ImagePreprocessor(angular_resolution, filter_size)
-    stimulus = preprocessor.preprocess(image_array, plot_substeps=False)
-
-    #initialize simulation object
-    print('Initialize the simulation')
-    sim = Simulation(stimulus=stimulus, filters=preprocessor.angle_filters, inh=inh, ini_standard=ini_standard)
-
     #======================|     Run Simulation     |======================#
+    print('Initialize the simulation')
+    simulation = SimulationExperiment('config.yaml')
+
     print('Simulation started...')
-    voltage, recovery, firings = sim.run(length, True)
+    voltage, recovery, firings = simulation.run(length=10, verbose=True)
     
     #=========================|     Plotting     |=========================#
     #plot voltage

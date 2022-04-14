@@ -1,15 +1,23 @@
+simulation:
+  random_seed: null
+
 preprocessing:
   input_image: ../data/NY_angles/NY2.jpg
-  angle_resolution: 45
-  filter_size: None
+  angle_resolution: 22.5
+  filter_size: null
   conv_threshold_specificity: 1.0
 
+connectivity:
+  total_connect_strength: 0.5
+  spatial_connect_strength: 0.5
+  angle_connect_strength: 0.5
+  inh_weight: 2.0
+  inh: 0.2
+
 model:
-  random_noise: 0.5
+  ini_standard: True
+  random_noise: 0.0
   inhibition_proportion: 0.1
   inhibition_strength: 0.2
-
-connectivity:
-  total_connection_strength: 1.0
-  spatial_connection_strength: 1.0
-  angle_connection_strength: 1.0
+  input_firing_prob: 1.0
+  input_strength: 1.0
