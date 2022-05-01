@@ -23,12 +23,14 @@ from functools import singledispatch, update_wrapper
 
 #related third party imports
 import numpy as np
+import yaml
 import matplotlib.pyplot as plt
 from scipy.signal import convolve
 from skimage.filters import threshold_otsu
 from PIL import Image, ImageFilter
 
 #local imports
+from result_plotter import Observable, ResultPlotter
 from draw import line_45_joint
 
 #==============================================================================#
@@ -49,7 +51,7 @@ def singledispatch_instance_method(func):
 #======================|          Preprocessor          |======================#
 #==============================================================================#
 
-class ImagePreprocessor:
+class ImagePreprocessor(Observable):
 
     @overload
     def __init__(self, angular_resolution:float, filter_size:None) -> None:
@@ -65,16 +67,16 @@ class ImagePreprocessor:
                                  None minimal viable filter size instead
         """
 
-        self.angular_resolution = angular_resolution
-        self.angle_filters = self._get_angle_filters(filter_size)
+        super().__init__()
+        filter_size = filter_size if filter_size != None else self._get_min_filter_size(angular_resolution)
+        self.angle_filters = self._get_angle_filters(filter_size, angular_resolution)
         
     #======================================================================#
     #======================|     Preprocessing      |======================#
     #======================================================================#
     
     @singledispatch_instance_method
-    def preprocess(self, image_input:Image.Image, filter_graciousness:float=1.0,
-                        plot_substeps:bool=True) -> np.ndarray:
+    def preprocess(self, image_input:Image.Image, filter_graciousness:float=1.0) -> np.ndarray:
         """Preprocess the image, first from RGB to grayscale. Then apply a Sobel 
         filter on the intensity values to gain edge detection. Threshold result 
         for binary image and convolve angular filters for angle detection maps.
@@ -84,7 +86,6 @@ class ImagePreprocessor:
             filter_graciousness = determines how closely the angle
                     filter needs to match the angle image data, i.e 0,75 would
                     count a patch matching 3/4 filter pixels
-            plot_substeps = whether to compile the substeps, plot and save them
 
         returns:
             image_angles = image angle dection maps, one for each angle in the
@@ -101,49 +102,47 @@ class ImagePreprocessor:
         intensity_threshold = threshold_otsu(np.array(image_edges))
         threshold_fn = lambda pixel_value : 1 if pixel_value > intensity_threshold else 0
         image_binary = image_edges.point(threshold_fn, mode = "1")
-        if plot_substeps: self.plot_images([image_input, image_gray, image_edges, image_binary], 
-            image_or_map_labels=True)
+        self.notify([image_input, image_gray, image_edges, image_binary], image_or_map_labels=True)
 
         #convolve angle detection filters over binary image (add optional step size later)
         image_angles = np.array([convolve(image_binary, angle_filter, mode='same', 
             method='direct') for i, angle_filter in enumerate(self.angle_filters)])
         filter_threshold = np.sum(self.angle_filters[0]) * filter_graciousness
         image_angles[np.array(image_angles) < filter_threshold] = 0
-        if plot_substeps: self.plot_images(image_angles.tolist(), image_or_map_labels=False)
+        self.notify(image_angles.tolist(), image_or_map_labels=False)
             
         return image_angles
 
     @preprocess.register(str)
-    def _(self, image_input:str, filter_graciousness:float=1.0,
-            plot_substeps:bool=True) -> np.ndarray:
+    def _(self, image_input:str, filter_graciousness:float=1.0) -> np.ndarray:
         """Wrapper for overloading the preprocess method with a 
         file path (str) as image input"""
 
         print(f'Start preprocessing from file {image_input}')
         try:
-            return self.preprocess(Image.open(image_input), filter_graciousness, plot_substeps)
+            return self.preprocess(Image.open(image_input), filter_graciousness)
 
         except FileNotFoundError:
             print(f'File "{image_input}" does not exist')
 
     @preprocess.register(np.ndarray)
-    def _(self, image_input:np.ndarray, filter_graciousness:float=1.0,
-            plot_substeps:bool=True) -> np.ndarray:
+    def _(self, image_input:np.ndarray, filter_graciousness:float=1.0) -> np.ndarray:
         """Wrapper for overloading the preprocess method with a 
         numpy array (np.ndarray) as image input"""
 
         print(f'Start preprocessing from numpy arrary')
-        return self.preprocess(Image.fromarray(image_input), filter_graciousness, plot_substeps)
+        return self.preprocess(Image.fromarray(image_input), filter_graciousness)
 
     #======================================================================#
     #=================|     Angle Filter Generation      |=================#
     #======================================================================#
 
     @singledispatch_instance_method
-    def _get_angle_filters(self, filter_size:int) -> list[str]:
+    def _get_angle_filters(self, filter_size:int, angular_resolution:float) -> list[str]:
         """Create filters to detect angles in the image
         
         args:
+            angular_resolution = angular resolution of the filters for angle detection
             filter_size = size of the filters for angle detection
 
         returns:
@@ -151,20 +150,20 @@ class ImagePreprocessor:
         """
 
         #Exception handling for angular resolution
-        if not 1 < self.angular_resolution < 90:
-            raise ValueError(f'Angular resolution {self.angular_resolution}° \
+        if not 1 < angular_resolution < 90:
+            raise ValueError(f'Angular resolution {angular_resolution}° \
                              is out of range, must be between 1 and 90.')
 
-        elif 180 % self.angular_resolution != 0:
+        elif 180 % angular_resolution != 0:
             warnings.warn("Angular resolution doesn't devide evenly")
 
         #Exception handling for filter size
-        elif filter_size < self._get_min_filter_size():
+        elif filter_size < self._get_min_filter_size(angular_resolution):
             raise ValueError('Filter size is too small for specified angular resolution')
 
         else:
             #termporary exception until dynamic filter generation is available
-            if filter_size != 4 or self.angular_resolution != 22.5:
+            if filter_size != 4 or angular_resolution != 22.5:
                 raise ValueError(f'Currently only a filter size of 4 and a angular \
                             resolution of 22.5° are supported')
 
@@ -182,62 +181,18 @@ class ImagePreprocessor:
         return np.array([angle_filter_000, angle_filter_022, angle_filter_045, angle_filter_067, 
             angle_filter_090, angle_filter_112, angle_filter_135, angle_filter_157])
 
-    @_get_angle_filters.register
-    def _(self, filter_size:None) -> list[str]:
-        """"Wrapper for overloading the _get_angle_filters method with 
-        filter_size as None"""
-
-        return self._get_angle_filters(self._get_min_filter_size())
-
-    def _get_min_filter_size(self) -> int:
+    def _get_min_filter_size(self, angular_resolution:float) -> int:
         """Calculate minimal filter size given by the specified angular 
         resolution
         
         returns:
-            min_filter_size = min. viable filter size of the filters 
-                            for angle detection
+            angular_resolution = angular resolution of the filters for angle detection
+            min_filter_size = min. viable filter size of the filters for angle detection
         """
 
-        #TODO: write code to calculate min filter size based on self.angular_resolution
+        #TODO: write code to calculate min filter size based on angular_resolution
         min_filter_size = 4
         return min_filter_size
-
-    #======================================================================#
-    #=========================|     Plotting     |=========================#
-    #======================================================================#
-
-    @overload
-    def plot_images(self, images:list[Image.Image], image_or_map_labels:bool) -> None:
-        ...
-    def plot_images(self, images:list[list], image_or_map_labels:bool) -> None:
-        """Compile plot from list of images and save all substeps into one figure
-        
-        args:
-            images = list of images to be plotted and saved
-            image_or_map_labels = true for returning image labels, 
-                                  false for returning map labels
-        """
-
-        #image labels or Create a dynamical list of the angle labels
-        image_labels = ["image preprocessing steps", "original image", 
-                "intensity values", "edge detection", "binary image"]
-        map_labels = ["angle detection maps"] + [f"{i}°" for i in  
-                np.arange(0, 180, self.angular_resolution)]
-        labels = image_labels if image_or_map_labels else map_labels
-
-        file_path = os.path.join(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__))), f"data/{labels[0]}")
-
-        #plot images on multiple axis
-        fig, ax = plt.subplots(figsize=(20, 10), nrows=2, ncols=int(len(images)/2))
-        for i, axi in enumerate(ax.flat):
-            axi.axis("off")
-            axi.set_title(labels[i+1])
-            axi.imshow(images[i])
-        plt.suptitle(labels[0])
-        plt.tight_layout()
-        plt.savefig(file_path)
-        plt.show()
 
 #==============================================================================#
 #==========================|          Main          |==========================#
@@ -254,6 +209,10 @@ if __name__ == "__main__":
     #preprocess method parameter
     filter_graciousness = 1.0 #optional
     plot_substeps = True #optional
+
+    #config file, here only needed for the plotter
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yaml')) as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
     
     #different possible types of input instances
     image_path = os.path.join(os.path.dirname(os.path.dirname(
@@ -263,13 +222,11 @@ if __name__ == "__main__":
 
     #======================|     Preprocessing      |======================#
     #preprocessor instantiation
-    preprocessor = ImagePreprocessor(angular_resolution, filter_size)
+    preprocessor = ImagePreprocessor(angular_resolution, None)
+    plotter = ResultPlotter(config, [preprocessor])
 
     #access angle filters for connectivity matrix
     angle_filters = preprocessor.angle_filters
 
     #preprocessing can take any of image_path, image_object or image_array
     result = preprocessor.preprocess(image_object)
-
-
-    print(image_path)

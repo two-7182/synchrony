@@ -1,13 +1,15 @@
-simulation:
-  random_seed: null
+experiment:
+  experiment_ID: 2
+  random_seed: null #if null RNG is seeded automatically by OS 
 
 preprocessing:
-  input_image: ../data/NY_angles/NY2.jpg
+  input_image: data/smol1.png #../data/NY_angles/NY2.jpg
   angle_resolution: 22.5
   filter_size: null
   conv_threshold_specificity: 1.0
 
 connectivity:
+  connectivity_file_path: ".../" #Todo
   total_connect_strength: 0.5
   spatial_connect_strength: 0.5
   angle_connect_strength: 0.5
@@ -21,3 +23,10 @@ model:
   inhibition_strength: 0.2
   input_firing_prob: 1.0
   input_strength: 1.0
+
+measurement:
+  metric: [van_rossum] #van_rossum, victor_purpura, spike_contrast, rsync
+
+plotting:
+  path: null
+  plot_substeps: True
