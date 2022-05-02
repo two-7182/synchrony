@@ -28,6 +28,8 @@ import matplotlib.pyplot as plt
 from scipy.signal import convolve
 from skimage.filters import threshold_otsu
 from PIL import Image, ImageFilter
+from math import radians, cos, sin
+from skimage.draw import line_nd
 
 #local imports
 from result_plotter import Observable, ResultPlotter
@@ -137,6 +139,42 @@ class ImagePreprocessor(Observable):
     #=================|     Angle Filter Generation      |=================#
     #======================================================================#
 
+    def get_endpoints(self, angle, size):
+        """ Compute endpoints of the vector via a rotation matrix
+
+        args:
+            angle = the angle for which the endpoints should be computed
+            size = size of the filters for angle detection.
+        """
+
+
+        rad_angle = radians(angle)
+        rotation_matrix = np.array([[cos(rad_angle), sin(rad_angle)],
+                                    [sin(rad_angle), cos(rad_angle)]])
+
+        vector = np.array([size,0])
+        #output of the dot product: vector
+        result = rotation_matrix.dot(vector)
+
+        # # scale the resulting vector so to reach desired size
+        #(otherwise, it is too short)
+        # depending on the angle size the vector should either intersect
+        #with the columns of the array or the rows
+        if 1< angle < 44 or angle > 136:
+            #when it should intersect with the columns (x-axis),
+            #so take x-value of vector
+            scale = size / result[0] #bc it should reach out to the columns
+        else:
+            #when vector should intersect with the rows (y-axis),
+            #so take y-value of vector
+            scale = size / result[1]
+
+        x2 = result[0] * scale
+        y2 = result[1] * scale
+
+
+        return x2,y2
+
     @singledispatch_instance_method
     def _get_angle_filters(self, filter_size:int, angular_resolution:float) -> list[str]:
         """Create filters to detect angles in the image
@@ -148,42 +186,6 @@ class ImagePreprocessor(Observable):
         returns:
             set of filters for angle detection
         """
-        
-        def get_endpoints(angle, size):
-            """ Compute endpoints of the vector via a rotation matrix
-
-            args:
-                angle = the angle for which the endpoints should be computed
-                size = size of the filters for angle detection.
-            """
-
-
-            rad_angle = radians(angle)
-            rotation_matrix = np.array([[cos(rad_angle), sin(rad_angle)],
-                                        [sin(rad_angle), cos(rad_angle)]])
-
-            vector = np.array([size,0])
-            #output of the dot product: vector
-            result = rotation_matrix.dot(vector)
-
-            # # scale the resulting vector so to reach desired size
-            #(otherwise, it is too short)
-            # depending on the angle size the vector should either intersect
-            #with the columns of the array or the rows
-            if 1< angle < 44 or angle > 136:
-                #when it should intersect with the columns (x-axis),
-                #so take x-value of vector
-                scale = size / result[0] #bc it should reach out to the columns
-            else:
-                #when vector should intersect with the rows (y-axis),
-                #so take y-value of vector
-                scale = size / result[1]
-
-            x2 = result[0] * scale
-            y2 = result[1] * scale
-
-
-            return x2,y2
 
         #Exception handling for angular resolution
         if not 1 < angular_resolution < 90:
@@ -197,79 +199,73 @@ class ImagePreprocessor(Observable):
         elif filter_size < self._get_min_filter_size(angular_resolution):
             raise ValueError('Filter size is too small for specified angular resolution')
 
-        else:
-            #termporary exception until dynamic filter generation is available
-            if filter_size != 4 or angular_resolution != 22.5:
-                raise ValueError(f'Currently only a filter size of 4 and a angular \
-                            resolution of 22.5° are supported')
+        angle_filters = []
 
-            angle_filters = []
+        # calculate the list of angles from the given angular resolution
+        count = angular_resolution
+        degree_list = []
 
-            # calculate the list of angles from the given angular resolution
-            count = angular_resolution
-            degree_list = []
+        while angular_resolution <= 180:
+            degree_list.append(angular_resolution)
+            angular_resolution += count
 
-            while angular_resolution <= 180:
-                degree_list.append(angular_resolution)
-                angular_resolution += count
-
-            for angle in degree_list:
+        for angle in degree_list:
 
 
-                # Exception handling for angles sizes and types
-                if angle <= 0 or angle > 180 or isinstance(angle, int) == False:
-                    raise ValueError("Degree for the filter cannot be smaller 0° or greater than 180° and must be an integer")
+            # Exception handling for angles sizes and types
+            if angle <= 0 or angle > 180 or isinstance(angle, int) == False:
+                raise ValueError("Degree for the filter cannot be smaller 0° or greater than 180° and must be an integer")
 
-                elif  0 < angle <= 44:
-                    x1 = filter_size -1
-                    y1 = 0
-                    x2, y2 = get_endpoints(angle, filter_size)
-                    # convert to array
-                    x2 = filter_size -1 #columns. line intersects always at last column
-                    y2 = (filter_size - y2) - 1
-                    if y2 < 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+            elif  0 < angle <= 44:
+                x1 = filter_size -1
+                y1 = 0
+                x2, y2 = self.get_endpoints(angle, filter_size)
+                # convert to array
+                x2 = filter_size -1 #columns. line intersects always at last column
+                y2 = (filter_size - y2) - 1
+                if y2 < 0:
+                    raise ValueError("Chosen filter size is too small for this angle")
 
-                elif 45 <= angle <= 89:
-                    x1 = filter_size -1
-                    y1 = 0
-                    x2, y2 = get_endpoints(angle, filter_size)
-                    #convert to array
-                    y2 = 0 # rows
-                    x2 = x2 - 1
-                    if x2 < 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+            elif 45 <= angle <= 89:
+                x1 = filter_size -1
+                y1 = 0
+                x2, y2 = self.get_endpoints(angle, filter_size)
+                #convert to array
+                y2 = 0 # rows
+                x2 = x2 - 1
+                if x2 < 0:
+                    raise ValueError("Chosen filter size is too small for this angle")
 
-                elif 90 <= angle <= 134:
-                    x1 = filter_size - 1
-                    y1 = filter_size -1
-                    x2, y2 = get_endpoints(angle, filter_size)
-                    y2 = 0
-                    x2 = (filter_size - abs(x2)) - 1 # take absolute value here to change from negative to positive -> no neg. values in arrays
-                    if x2 <= 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+            elif 90 <= angle <= 134:
+                x1 = filter_size - 1
+                y1 = filter_size -1
+                x2, y2 = self.get_endpoints(angle, filter_size)
+                y2 = 0
+                x2 = (filter_size - abs(x2)) - 1 # take absolute value here to change from negative to positive -> no neg. values in arrays
+                if x2 <= 0:
+                    raise ValueError("Chosen filter size is too small for this angle")
 
-                elif angle == 135:
-                    x1 = filter_size - 1
-                    y1 = filter_size - 1
-                    x2 = 0
-                    y2 = 0
+            elif angle == 135:
+                x1 = filter_size - 1
+                y1 = filter_size - 1
+                x2 = 0
+                y2 = 0
 
-                #135 <= angle <= 180:
-                else:
-                    x1 = filter_size - 1
-                    y1 = filter_size -1
-                    x2, y2 = get_endpoints(angle, filter_size)
-                    x2 = 0 # columns do not change- > intersect always at column 0
-                    y2 = (filter_size - abs(y2)) - 1
-                    if y2 <= 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+            #135 <= angle <= 180:
+            else:
+                x1 = filter_size - 1
+                y1 = filter_size -1
+                x2, y2 = self.get_endpoints(angle, filter_size)
+                x2 = 0 # columns do not change- > intersect always at column 0
+                y2 = (filter_size - abs(y2)) - 1
+                if y2 <= 0:
+                    raise ValueError("Chosen filter size is too small for this angle")
 
 
-                conv_filter = np.zeros(shape=(filter_size,filter_size))
-                angle_line = line_nd((x1,y1), (y2, x2), endpoint=True) #using line_nd in order to be able use floats
-                conv_filter[angle_line] = 1
-                angle_filters.append(conv_filter)
+            conv_filter = np.zeros(shape=(filter_size,filter_size))
+            angle_line = line_nd((x1,y1), (y2, x2), endpoint=True) #using line_nd in order to be able use floats
+            conv_filter[angle_line] = 1
+            angle_filters.append(conv_filter)
 
             return angle_filters
 
@@ -297,14 +293,14 @@ class ImagePreprocessor(Observable):
 
         for arc in degree_list:
 
-            x, y = get_endpoints(arc, filter_size)
+            x, y = self.get_endpoints(arc, filter_size)
             x = abs(x)
             y = abs(y)
 
             if 0 < arc <= 44 or arc >= 135: #first and fourth case
                 while y >= 0:
                     filter_size -= 1
-                    x, y = get_endpoints(arc, filter_size)
+                    x, y = self.get_endpoints(arc, filter_size)
                     x = round(abs(x),3)
                     y = round(abs(y),3)
                     if ((filter_size - y) - 1) <= 3:
@@ -315,7 +311,7 @@ class ImagePreprocessor(Observable):
             elif 45 <= arc <= 89: # second case
                 while x >= 0:
                     filter_size -= 1
-                    x, y = get_endpoints(arc, filter_size)
+                    x, y = self.get_endpoints(arc, filter_size)
                     x = round(abs(x),3)
                     y = round(abs(y),3)
                     if (x-1) <= 3:
@@ -325,7 +321,7 @@ class ImagePreprocessor(Observable):
             else:# 90 <= arc <= 134 so third case
                 while x >= 0:
                     filter_size -= 1
-                    x, y = get_endpoints(arc, filter_size)
+                    x, y = self.get_endpoints(arc, filter_size)
                     x = round(abs(x),3)
                     y = round(abs(y),3)
                     if ((filter_size - x)-1) <= 3:
