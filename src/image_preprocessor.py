@@ -193,79 +193,81 @@ class ImagePreprocessor(Observable):
                              is out of range, must be between 1 and 90.')
 
         elif 180 % angular_resolution != 0:
-            warnings.warn("Angular resolution doesn't devide evenly")
+            warnings.warn("Angular resolution doesn't divide evenly")
 
         #Exception handling for filter size
         elif filter_size < self._get_min_filter_size(angular_resolution):
             raise ValueError('Filter size is too small for specified angular resolution')
 
-        angle_filters = []
+        else:
 
-        # calculate the list of angles from the given angular resolution
-        count = angular_resolution
-        degree_list = []
+            angle_filters = []
 
-        while angular_resolution <= 180:
-            degree_list.append(angular_resolution)
-            angular_resolution += count
+            # calculate the list of angles from the given angular resolution
+            count = angular_resolution
+            degree_list = []
 
-        for angle in degree_list:
+            while angular_resolution <= 180:
+                degree_list.append(angular_resolution)
+                angular_resolution += count
 
-
-            # Exception handling for angles sizes and types
-            if angle <= 0 or angle > 180 or isinstance(angle, int) == False:
-                raise ValueError("Degree for the filter cannot be smaller 0° or greater than 180° and must be an integer")
-
-            elif  0 < angle <= 44:
-                x1 = filter_size -1
-                y1 = 0
-                x2, y2 = self.get_endpoints(angle, filter_size)
-                # convert to array
-                x2 = filter_size -1 #columns. line intersects always at last column
-                y2 = (filter_size - y2) - 1
-                if y2 < 0:
-                    raise ValueError("Chosen filter size is too small for this angle")
-
-            elif 45 <= angle <= 89:
-                x1 = filter_size -1
-                y1 = 0
-                x2, y2 = self.get_endpoints(angle, filter_size)
-                #convert to array
-                y2 = 0 # rows
-                x2 = x2 - 1
-                if x2 < 0:
-                    raise ValueError("Chosen filter size is too small for this angle")
-
-            elif 90 <= angle <= 134:
-                x1 = filter_size - 1
-                y1 = filter_size -1
-                x2, y2 = self.get_endpoints(angle, filter_size)
-                y2 = 0
-                x2 = (filter_size - abs(x2)) - 1 # take absolute value here to change from negative to positive -> no neg. values in arrays
-                if x2 <= 0:
-                    raise ValueError("Chosen filter size is too small for this angle")
-
-            elif angle == 135:
-                x1 = filter_size - 1
-                y1 = filter_size - 1
-                x2 = 0
-                y2 = 0
-
-            #135 <= angle <= 180:
-            else:
-                x1 = filter_size - 1
-                y1 = filter_size -1
-                x2, y2 = self.get_endpoints(angle, filter_size)
-                x2 = 0 # columns do not change- > intersect always at column 0
-                y2 = (filter_size - abs(y2)) - 1
-                if y2 <= 0:
-                    raise ValueError("Chosen filter size is too small for this angle")
+            for angle in degree_list:
 
 
-            conv_filter = np.zeros(shape=(filter_size,filter_size))
-            angle_line = line_nd((x1,y1), (y2, x2), endpoint=True) #using line_nd in order to be able use floats
-            conv_filter[angle_line] = 1
-            angle_filters.append(conv_filter)
+                # Exception handling for angles sizes and types
+                if angle <= 0 or angle > 180 or isinstance(angle, int) == False:
+                    raise ValueError("Degree for the filter cannot be smaller 0° or greater than 180° and must be an integer")
+
+                elif  0 < angle <= 44:
+                    x1 = filter_size -1
+                    y1 = 0
+                    x2, y2 = self.get_endpoints(angle, filter_size)
+                    # convert to array
+                    x2 = filter_size -1 #columns. line intersects always at last column
+                    y2 = (filter_size - y2) - 1
+                    if y2 < 0:
+                        raise ValueError("Chosen filter size is too small for this angle")
+
+                elif 45 <= angle <= 89:
+                    x1 = filter_size -1
+                    y1 = 0
+                    x2, y2 = self.get_endpoints(angle, filter_size)
+                    #convert to array
+                    y2 = 0 # rows
+                    x2 = x2 - 1
+                    if x2 < 0:
+                        raise ValueError("Chosen filter size is too small for this angle")
+
+                elif 90 <= angle <= 134:
+                    x1 = filter_size - 1
+                    y1 = filter_size -1
+                    x2, y2 = self.get_endpoints(angle, filter_size)
+                    y2 = 0
+                    x2 = (filter_size - abs(x2)) - 1 # take absolute value here to change from negative to positive -> no neg. values in arrays
+                    if x2 <= 0:
+                        raise ValueError("Chosen filter size is too small for this angle")
+
+                elif angle == 135:
+                    x1 = filter_size - 1
+                    y1 = filter_size - 1
+                    x2 = 0
+                    y2 = 0
+
+                #135 <= angle <= 180:
+                else:
+                    x1 = filter_size - 1
+                    y1 = filter_size -1
+                    x2, y2 = self.get_endpoints(angle, filter_size)
+                    x2 = 0 # columns do not change- > intersect always at column 0
+                    y2 = (filter_size - abs(y2)) - 1
+                    if y2 <= 0:
+                        raise ValueError("Chosen filter size is too small for this angle")
+
+
+                conv_filter = np.zeros(shape=(filter_size,filter_size))
+                angle_line = line_nd((x1,y1), (y2, x2), endpoint=True) #using line_nd in order to be able use floats
+                conv_filter[angle_line] = 1
+                angle_filters.append(conv_filter)
 
             return angle_filters
 
@@ -280,7 +282,6 @@ class ImagePreprocessor(Observable):
             min_filter_size = min. viable filter size of the filters for angle detection
         """
 
-        #TODO: write code to calculate min filter size based on angular_resolution
         count = angular_resolution
         filter_size = 15 #start out with default filter size
         degree_list = []
