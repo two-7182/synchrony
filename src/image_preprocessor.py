@@ -149,7 +149,7 @@ class ImagePreprocessor(Observable):
 
 
         rad_angle = radians(angle)
-        rotation_matrix = np.array([[cos(rad_angle), sin(rad_angle)],
+        rotation_matrix = np.array([[cos(rad_angle), -sin(rad_angle)],
                                     [sin(rad_angle), cos(rad_angle)]])
 
         vector = np.array([size,0])
@@ -213,10 +213,9 @@ class ImagePreprocessor(Observable):
 
             for angle in degree_list:
 
-
                 # Exception handling for angles sizes and types
-                if angle <= 0 or angle > 180 or isinstance(angle, int) == False:
-                    raise ValueError("Degree for the filter cannot be smaller 0° or greater than 180° and must be an integer")
+                if angle <= 0 or angle > 180:
+                    raise ValueError("Degree for the filter cannot be smaller 0° or greater than 180°")
 
                 elif  0 < angle <= 44:
                     x1 = filter_size -1
@@ -224,9 +223,7 @@ class ImagePreprocessor(Observable):
                     x2, y2 = self.get_endpoints(angle, filter_size)
                     # convert to array
                     x2 = filter_size -1 #columns. line intersects always at last column
-                    y2 = (filter_size - y2) - 1
-                    if y2 < 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+                    y2 = round(((filter_size - y2) - 1),3)
 
                 elif 45 <= angle <= 89:
                     x1 = filter_size -1
@@ -234,18 +231,15 @@ class ImagePreprocessor(Observable):
                     x2, y2 = self.get_endpoints(angle, filter_size)
                     #convert to array
                     y2 = 0 # rows
-                    x2 = x2 - 1
-                    if x2 < 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+                    x2 = round((x2 - 1),3)
+
 
                 elif 90 <= angle <= 134:
                     x1 = filter_size - 1
                     y1 = filter_size -1
                     x2, y2 = self.get_endpoints(angle, filter_size)
                     y2 = 0
-                    x2 = (filter_size - abs(x2)) - 1 # take absolute value here to change from negative to positive -> no neg. values in arrays
-                    if x2 <= 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+                    x2 = round(((filter_size - abs(x2)) - 1)) # take absolute value here to change from negative to positive -> no neg. values in arrays
 
                 elif angle == 135:
                     x1 = filter_size - 1
@@ -253,15 +247,13 @@ class ImagePreprocessor(Observable):
                     x2 = 0
                     y2 = 0
 
-                #135 <= angle <= 180:
+                #135 < angle <= 180:
                 else:
                     x1 = filter_size - 1
                     y1 = filter_size -1
                     x2, y2 = self.get_endpoints(angle, filter_size)
                     x2 = 0 # columns do not change- > intersect always at column 0
-                    y2 = (filter_size - abs(y2)) - 1
-                    if y2 <= 0:
-                        raise ValueError("Chosen filter size is too small for this angle")
+                    y2 = round(((filter_size - abs(y2)) - 1),3)
 
 
                 conv_filter = np.zeros(shape=(filter_size,filter_size))
@@ -269,6 +261,7 @@ class ImagePreprocessor(Observable):
                 conv_filter[angle_line] = 1
                 angle_filters.append(conv_filter)
 
+            print(angle_filters)
             return angle_filters
 
 
@@ -283,7 +276,6 @@ class ImagePreprocessor(Observable):
         """
 
         count = angular_resolution
-        filter_size = 15 #start out with default filter size
         degree_list = []
         filter_size_list = []
 
@@ -293,12 +285,12 @@ class ImagePreprocessor(Observable):
             angular_resolution += count
 
         for arc in degree_list:
-
+            filter_size = 15 #start out with default filter size
             x, y = self.get_endpoints(arc, filter_size)
             x = abs(x)
             y = abs(y)
 
-            if 0 < arc <= 44 or arc >= 135: #first and fourth case
+            if 0 < arc <= 44 or arc >= 136: #first and fourth case
                 while y >= 0:
                     filter_size -= 1
                     x, y = self.get_endpoints(arc, filter_size)
@@ -309,7 +301,7 @@ class ImagePreprocessor(Observable):
                         break
 
 
-            elif 45 <= arc <= 89: # second case
+            elif 46 <= arc <= 89: # second case
                 while x >= 0:
                     filter_size -= 1
                     x, y = self.get_endpoints(arc, filter_size)
@@ -318,6 +310,9 @@ class ImagePreprocessor(Observable):
                     if (x-1) <= 3:
                         filter_size_list.append(filter_size)
                         break
+
+            elif arc == 45 or arc == 90 or arc == 135 or arc==180:
+                    filter_size_list.append(4)
 
             else:# 90 <= arc <= 134 so third case
                 while x >= 0:
@@ -331,6 +326,7 @@ class ImagePreprocessor(Observable):
 
 
         min_filter_size = max(filter_size_list)
+        print(filter_size_list)
         return min_filter_size
 
 
